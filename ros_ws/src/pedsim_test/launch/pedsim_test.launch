@@ -1,0 +1,5 @@
+<launch>
+  <node name="pedsim_test" pkg="pedsim_test" type="pedsim_test" output="screen">
+  </node>
+
+</launch>

@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>pedsim_test</name>
+  <version>0.1.11</version>
+  <description>pedsim_test</description>
+
+  <maintainer email="marc.testier@gmail.com">Marc Testier</maintainer>
+
+  <license>LGPL</license>
+
+  <author email="marc.testier@gmail.com">Marc Testier</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <depend>roscpp</depend>
+  <depend>std_msgs</depend>
+  <depend>rosconsole</depend>
+  <depend>pedsim</depend>
+
+  <exec_depend>message_runtime</exec_depend>
+
+  <export>
+  </export>
+</package>
