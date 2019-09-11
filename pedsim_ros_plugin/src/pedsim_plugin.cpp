@@ -1,4 +1,7 @@
 #include <gazebo/common/Plugin.hh>
+#include <gazebo/gazebo.hh>
+#include <gazebo/physics/physics.hh>
+#include <gazebo/common/common.hh>
 #include <ros/ros.h>
 
 namespace gazebo
@@ -21,13 +24,19 @@ public:
         }
 
         ROS_INFO_STREAM("Hello World!");
+        this->model = _world;
+        this->updateConnection = event::Events::ConnectWorldUpdateBegin(std::bind(&PedSimPlugin::OnUpdate, this));
     }
 
 
-    void UpdateChild()
+    void OnUpdate()
     {
-        ROS_INFO_STREAM("I will be called one day!!");
+        ROS_INFO_STREAM("Hola!");
     }
+
+private:
+    physics::ModelPtr model;
+    event::ConnectionPtr updateConnection;
 };
 GZ_REGISTER_WORLD_PLUGIN(PedSimPlugin)
 } // namespace gazebo
