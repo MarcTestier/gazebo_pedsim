@@ -28,18 +28,12 @@ public:
 private:
     void initPedSim();
 
-    void initNode();
-
-    void createAgentModel(Ped::Tvector pos);
+    void createAgentModel(int i, Ped::Tvector pos);
 
 private:
     /// Gazebo variables
     physics::WorldPtr world;
     event::ConnectionPtr updateConnection;
-
-    /// ROS variables
-    transport::NodePtr node;
-    transport::PublisherPtr factoryPub;
 
     /// PedSim variables
     std::shared_ptr<Ped::Tscene> pedscene;
@@ -48,7 +42,6 @@ private:
     std::shared_ptr<Ped::Tobstacle> obstacle;
     std::vector<std::shared_ptr<Ped::Tagent>> agent_array;
 
-    bool flag;
 };
 
 GZ_REGISTER_WORLD_PLUGIN(PedSimPlugin)
