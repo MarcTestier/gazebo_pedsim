@@ -5,7 +5,10 @@
 #include <gazebo/gazebo.hh>
 #include <gazebo/physics/physics.hh>
 #include <gazebo/common/common.hh>
+#include <gazebo/msgs/msgs.hh>
+#include <gazebo/transport/Node.hh>
 #include <ros/ros.h>
+#include <ignition/math/Pose3.hh>
 
 #include "pedsim/ped_includes.h"
 
@@ -23,11 +26,20 @@ public:
     void OnUpdate();
 
 private:
-    void InitPedSim();
+    void initPedSim();
+
+    void initNode();
+
+    void createAgentModel(Ped::Tvector pos);
 
 private:
-    physics::WorldPtr model;
+    /// Gazebo variables
+    physics::WorldPtr world;
     event::ConnectionPtr updateConnection;
+
+    /// ROS variables
+    transport::NodePtr node;
+    transport::PublisherPtr factoryPub;
 
     /// PedSim variables
     std::shared_ptr<Ped::Tscene> pedscene;
@@ -35,6 +47,8 @@ private:
     std::shared_ptr<Ped::Twaypoint> w2;
     std::shared_ptr<Ped::Tobstacle> obstacle;
     std::vector<std::shared_ptr<Ped::Tagent>> agent_array;
+
+    bool flag;
 };
 
 GZ_REGISTER_WORLD_PLUGIN(PedSimPlugin)
