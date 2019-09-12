@@ -37,15 +37,3 @@ install(DIRECTORY include/${PROJECT_NAME}/
    FILES_MATCHING PATTERN "*.h"
    PATTERN ".svn" EXCLUDE
 )
-
-if(CATKIN_ENABLE_TESTING)
-  find_package(roslint)
-  # Ignore long -> int32_t warning, urg_c driver uses
-  # long, etc. Wrapper must also use these
-  set(ROSLINT_CPP_OPTS "--filter=-runtime/references,-runtime/int")
-  roslint_cpp()
-  roslint_add_test()
-
-  find_package(roslaunch REQUIRED)
-  #roslaunch_add_file_check(launch/pedsim_test.launch)
-endif()
