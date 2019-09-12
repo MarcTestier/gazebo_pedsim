@@ -5,15 +5,27 @@ project(pedsim_ros_plugin)
 find_package(catkin REQUIRED COMPONENTS 
   roscpp 
   std_msgs 
+  std_srvs
   rosconsole 
   gazebo_ros 
   pedsim
+  message_generation
 )
+
 set_directory_properties(PROPERTIES COMPILE_OPTIONS "-std=c++11")
+
+add_service_files(
+  FILES
+  PedSimInit.srv
+)
+
+generate_messages(
+  DEPENDENCIES std_msgs
+)
 
 catkin_package(
   INCLUDE_DIRS include
-  CATKIN_DEPENDS roscpp gazebo_ros std_msgs rosconsole pedsim
+  CATKIN_DEPENDS roscpp gazebo_ros std_msgs std_srvs rosconsole pedsim message_runtime
   DEPENDS
 )
 
@@ -25,3 +37,4 @@ include_directories(${Boost_INCLUDE_DIR} include ${catkin_INCLUDE_DIRS} ${GAZEBO
 
 add_library(${PROJECT_NAME} src/pedsim_plugin.cpp)
 target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
+add_dependencies(${PROJECT_NAME} ${PROJECT_NAME}_gencpp)

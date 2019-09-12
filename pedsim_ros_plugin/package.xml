@@ -12,12 +12,15 @@
 
     <buildtool_depend>catkin</buildtool_depend>
 
+    <build_depend>message_generation</build_depend>
+
     <depend>roscpp</depend>
     <depend>std_msgs</depend>
+    <depend>std_srvs</depend>
     <depend>rosconsole</depend>
     <depend>gazebo_ros</depend>
     <depend>pedsim</depend>
-
+    
     <exec_depend>message_runtime</exec_depend>
 
     <export>

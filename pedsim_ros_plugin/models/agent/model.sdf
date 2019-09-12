@@ -3,15 +3,15 @@
   <model name ='agent'>
     <pose>0 0 0 0 0 0</pose>
     <link name ='link'>
-      <pose>0 0 .2 0 0 0</pose>
+      <pose>0 0 .5 0 0 0</pose>
       <collision name ='collision'>
         <geometry>
-          <cylinder><radius>0.2</radius><length>1</length></cylinder>
+          <box><size>0.2 0.4 1.8</size></box>
         </geometry>
       </collision>
-      <visual name='visual'>
+      <visual name ='visual'>
         <geometry>
-          <cylinder><radius>0.2</radius><length>1</length></cylinder>
+          <box><size>0.2 0.4 1.8</size></box>
         </geometry>
       </visual>
     </link>
