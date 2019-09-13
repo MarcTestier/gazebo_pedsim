@@ -8,12 +8,8 @@ namespace gazebo
 
     PedSimPlugin::~PedSimPlugin()
     {
-        // Cleanup
-        // for (Ped::Tagent* agent : pedscene->getAllAgents()) delete agent;
-        // delete pedscene;
-        // delete w1;
-        // delete w2;
-        // delete o;
+        this->pedscene->clear();
+        delete this->pedscene;
     }
 
     void PedSimPlugin::Load(physics::WorldPtr _world, sdf::ElementPtr _sdf)
@@ -35,7 +31,9 @@ namespace gazebo
         // Create ros node and publish stuff there!
         this->rosNode.reset(new ros::NodeHandle("pedsim_plugin_ros_node"));
 
-        this->pedSimInitService = this->rosNode->advertiseService(this->world->Name() + "/pedSimInitService", &PedSimPlugin::PedSimInitService, this);
+        this->pedSimInitService = this->rosNode->advertiseService(this->world->Name() + "/pedSimInitService", &PedSimPlugin::pedSimInitServiceCb, this);
+
+        this->pedSimResetService = this->rosNode->advertiseService(this->world->Name() + "/pedSimResetService", &PedSimPlugin::pedSimResetServiceCb, this);
     }
 
     void PedSimPlugin::initPedSim(){
@@ -43,25 +41,34 @@ namespace gazebo
 
         this->world->SetPaused(true);
 
-        // Setup
-        this->pedscene = std::make_shared<Ped::Tscene>(-200, -200, 400, 400);
-        this->w1 = std::make_shared<Ped::Twaypoint>(-100, 0, 24);
-        this->w2 = std::make_shared<Ped::Twaypoint>(+100, 0, 12);
-        this->obstacle = std::make_shared<Ped::Tobstacle>(0, -5,  0.05, +5);
-        this->createObstacleModel("obs1", 0, -5,  0.05, +5);
-        pedscene->addObstacle(obstacle.get());
+        // Setup the scene
+        ROS_INFO_STREAM("Create pedscene");
+        this->pedscene = new Ped::Tscene(-200, -200, 400, 400);
 
-        for (int i = 0; i < 20; i++) {
-            std::shared_ptr<Ped::Tagent> agent = std::make_shared<Ped::Tagent>();
-            agent_array.push_back(agent);
-            agent->addWaypoint(w1.get());
-            agent->addWaypoint(w2.get());
+        // Create waypoints
+        ROS_INFO_STREAM("Create waypoints");
+        Ped::Twaypoint* w1 = new Ped::Twaypoint(-100, 0, 24);
+        Ped::Twaypoint* w2 = new Ped::Twaypoint(+100, 0, 12);
+
+        // Create obstacles
+        ROS_INFO_STREAM("Create obstacles");
+        Ped::Tobstacle* obstacle = new Ped::Tobstacle(0, -5,  0, +5);
+        this->createObstacleModel(0, 0, -5,  0.05, +5);
+        this->pedscene->addObstacle(obstacle);
+
+        // Create agents
+        ROS_INFO_STREAM("Create agents");
+        for (int i = 0; i < 5; i++) {
+            Ped::Tagent* agent = new Ped::Tagent();
+            this->agent_array.push_back(agent);
+            agent->addWaypoint(w1);
+            agent->addWaypoint(w2);
             agent->setPosition(-50 + rand()/(RAND_MAX/80)-40, 0 + rand()/(RAND_MAX/20) -10, 0);
             agent->setfactorsocialforce(2.0);
             agent->setfactorobstacleforce(2.0);
             //agent->setfactorlookaheadforce(5.0);
             this->createAgentModel(i, agent->getPosition());
-            this->pedscene->addAgent(agent.get());
+            this->pedscene->addAgent(agent);
         }
 
         this->world->SetPaused(false);
@@ -70,24 +77,30 @@ namespace gazebo
     }
 
 
-    void PedSimPlugin::createObstacleModel(std::string name, double ax, double ay, double bx, double by){
-       // Insert a sphere model from string
+    void PedSimPlugin::createObstacleModel(int i, double ax, double ay, double bx, double by){
+        // Insert a sphere model from string
+        double posX = (ax+bx)/2;
+        double posY = (ay+by)/2;
+
+        float angle = std::atan2(ay - by, ax - bx);
+        double length = std::sqrt(std::pow(bx-ax, 2) + std::pow(by-ay, 2));
+
         sdf::SDF obsSDF;
         obsSDF.SetFromString(
-        "<sdf version ='1.4'>\
-            <model name ='" + name + "'>\
+        "<sdf version ='1.6'>\
+            <model name ='obs" + std::to_string(i) + "'>\
                 <static>true</static>\
-                <pose>" + std::to_string(ax+bx) + " " + std::to_string(ay+by) + " 0.5 0 0 0</pose>\
+                <pose>" + std::to_string(posX) + " " + std::to_string(posY) + " 0.5 0 0 " + std::to_string(angle) + "</pose>\
                 <link name ='link'>\
                     <pose>0 0 0 0 0 0</pose>\
                     <collision name ='collision'>\
                         <geometry>\
-                            <box><size>" + std::to_string((std::abs(ax)+std::abs(bx))) + " " + std::to_string((std::abs(ay)+std::abs(by))) + " 1</size></box>\
+                            <box><size>" + std::to_string(length) + " 0.1 1</size></box>\
                         </geometry>\
                     </collision>\
                     <visual name='visual'>\
                         <geometry>\
-                            <box><size>" + std::to_string((std::abs(ax)+std::abs(bx))) + " " + std::to_string((std::abs(ay)+std::abs(by))) + " 1</size></box>\
+                            <box><size>" + std::to_string(length) + " 0.1 1</size></box>\
                         </geometry>\
                     </visual>\
                 </link>\
@@ -97,10 +110,11 @@ namespace gazebo
     }
 
     void PedSimPlugin::createAgentModel(int i, Ped::Tvector pos){
+        ROS_INFO_STREAM("Creating agent" << i);
        // Insert a sphere model from string
         sdf::SDF agentSDF;
         agentSDF.SetFromString(
-        "<sdf version ='1.4'>\
+        "<sdf version ='1.6'>\
             <model name ='agent" + std::to_string(i) + "'>\
                 <static>true</static>\
                 <pose>" + std::to_string(pos.x) + " " + std::to_string(pos.y) + " " + std::to_string(pos.z) + " 0 0 0</pose>\
@@ -125,36 +139,81 @@ namespace gazebo
 
         // Wait for the entity to spawn
         while (!this->world->ModelByName("agent" + std::to_string(i)))
-            common::Time::MSleep(100);
+            common::Time::MSleep(10);
 
         agent_model_array.push_back(this->world->ModelByName("agent" + std::to_string(i)));
     }
 
     void PedSimPlugin::OnUpdate(){
-
         if (this->isPedSimInit) {
             // Move all agents
-            pedscene->moveAgents(0.05);
+            this->pedscene->moveAgents(0.05);
 
             for (int j = 0; j < this->agent_array.size(); j++) {
-                Ped::Tvector pos = agent_array[j]->getPosition();
-                agent_model_array[j]->SetWorldPose(ignition::math::Pose3d(pos.x, pos.y, pos.z, 0, 0, 0));
+                if (this->agent_model_array.size() > j && this->agent_model_array[j]) {
+                    Ped::Tvector pos = this->agent_array[j]->getPosition();
+                    this->agent_model_array[j]->SetWorldPose(ignition::math::Pose3d(pos.x, pos.y, pos.z, 0, 0, 0));
+                }
+            }
+
+            if (this->world->Iterations() % 1000 == 0) {
+                this->pedscene->cleanup();
             }
         }
     }
 
-    // TODO: add reset service
     // TODO: add params to init service to set number of agents, obstacles (?), waypoints, scene size and forces on agent
-
-    bool PedSimPlugin::PedSimInitService(
-        pedsim_ros_plugin::PedSimInit::Request &req, pedsim_ros_plugin::PedSimInit::Response &res)
+    bool PedSimPlugin::pedSimInitServiceCb(
+        pedsim_ros_plugin::PedSimInit::Request &req,
+        pedsim_ros_plugin::PedSimInit::Response &res)
     {
-        ROS_INFO_STREAM("PedSimInitService called: " << req.data);
+        ROS_INFO_STREAM("pedSimInitService called: " << req.data);
         if (!this->isPedSimInit) {
             this->initPedSim();
             this->isPedSimInit = true;
         }
         return true;
+    }
+
+    bool PedSimPlugin::pedSimResetServiceCb(
+        std_srvs::Empty::Request &req, 
+        std_srvs::Empty::Response &res)
+    {
+        ROS_INFO_STREAM("pedSimResetService called");
+
+        this->world->SetPaused(true);
+
+        this->pedsimCleanup();
+
+        this->isPedSimInit = false;
+
+        this->world->SetPaused(false);
+
+        return true;
+    }
+
+    void PedSimPlugin::pedsimCleanup(){
+        ROS_INFO_STREAM("pedsimCleanup agent size: " << this->agent_array.size());
+
+        ROS_INFO_STREAM("pedsimCleanup going to delete agent models");
+        for (int i = 0; i < this->pedscene->getAllAgents().size(); i++) {
+            this->world->RemoveModel("agent" + std::to_string(i));
+        }
+        this->agent_model_array.clear();
+        this->agent_array.clear();
+
+        ROS_INFO_STREAM("pedsimCleanup going to delete obstacle models");
+        for (int i = 0; i < this->pedscene->getAllObstacles().size(); i++) {
+            this->world->RemoveModel("obs" + std::to_string(i));
+        }
+
+        ROS_INFO_STREAM("pedsimCleanup going to clear scene");
+        this->pedscene->clear();
+        delete this->pedscene;
+
+        ROS_INFO_STREAM("pedsimCleanup agent size: " << this->agent_array.size());
+
+        ROS_INFO_STREAM("pedsimCleanup finished cleanup");
     }
 
 } // namespace gazebo

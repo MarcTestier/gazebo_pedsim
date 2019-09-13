@@ -13,6 +13,7 @@
 #include "pedsim/ped_includes.h"
 
 #include "pedsim_ros_plugin/PedSimInit.h"
+#include "std_srvs/Empty.h"
 
 
 namespace gazebo
@@ -33,12 +34,19 @@ private:
     void initPedSim();
 
     void createAgentModel(int i, Ped::Tvector pos);
-    void createObstacleModel(std::string name, double ax, double ay, double bx, double by);
+    void createObstacleModel(int i, double ax, double ay, double bx, double by);
 
-    bool PedSimInitService(
+    bool pedSimInitServiceCb(
         pedsim_ros_plugin::PedSimInit::Request &req,
         pedsim_ros_plugin::PedSimInit::Response &res
     );
+
+    bool pedSimResetServiceCb(
+        std_srvs::Empty::Request &req, 
+        std_srvs::Empty::Response &res
+    );
+
+    void pedsimCleanup();
 
 private:
     /// Gazebo variables
@@ -49,13 +57,11 @@ private:
     /// ROS variables
     std::unique_ptr<ros::NodeHandle> rosNode;
     ros::ServiceServer pedSimInitService;
+    ros::ServiceServer pedSimResetService;
 
     /// PedSim variables
-    std::shared_ptr<Ped::Tscene> pedscene;
-    std::shared_ptr<Ped::Twaypoint> w1;
-    std::shared_ptr<Ped::Twaypoint> w2;
-    std::shared_ptr<Ped::Tobstacle> obstacle;
-    std::vector<std::shared_ptr<Ped::Tagent>> agent_array;
+    Ped::Tscene* pedscene;
+    std::vector<Ped::Tagent*> agent_array;
 
     /// Flags
     bool isPedSimInit;
