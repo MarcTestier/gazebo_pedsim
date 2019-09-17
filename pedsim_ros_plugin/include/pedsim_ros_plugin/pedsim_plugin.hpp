@@ -51,20 +51,27 @@ private:
 private:
     /// Gazebo variables
     physics::WorldPtr world;
-    event::ConnectionPtr updateConnection;
+    event::ConnectionPtr update_connection;
     std::vector<physics::ModelPtr> agent_model_array;
+    std::vector<physics::ModelPtr> obs_model_array;
 
     /// ROS variables
-    std::unique_ptr<ros::NodeHandle> rosNode;
-    ros::ServiceServer pedSimInitService;
-    ros::ServiceServer pedSimResetService;
+    std::unique_ptr<ros::NodeHandle> ros_node;
+    ros::ServiceServer pedsim_init_service;
+    ros::ServiceServer pedsim_reset_service;
 
     /// PedSim variables
-    Ped::Tscene* pedscene;
+    Ped::Tscene* ped_scene;
     std::vector<Ped::Tagent*> agent_array;
+    float factor_social_force;
+    float factor_obstacle_force;
+    float factor_lookahead_force;
+    float factor_desired_force;
+    int agent_number;
 
     /// Flags
-    bool isPedSimInit;
+    bool is_pedsim_init;
+    bool reset_pedsim;
 };
 
 GZ_REGISTER_WORLD_PLUGIN(PedSimPlugin)

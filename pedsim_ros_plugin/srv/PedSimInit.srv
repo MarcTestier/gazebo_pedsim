@@ -1,3 +1,7 @@
-std_msgs/String data
+float32 factor_social_force
+float32 factor_obstacle_force
+float32 factor_lookahead_force
+float32 factor_desired_force
+int32 agent_number
 ---
 std_msgs/String msg
