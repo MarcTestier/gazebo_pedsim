@@ -6,6 +6,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp 
   std_msgs 
   std_srvs
+  visualization_msgs
   rosconsole 
   gazebo_ros 
   pedsim
@@ -25,7 +26,7 @@ generate_messages(
 
 catkin_package(
   INCLUDE_DIRS include
-  CATKIN_DEPENDS roscpp gazebo_ros std_msgs std_srvs rosconsole pedsim message_runtime
+  CATKIN_DEPENDS roscpp gazebo_ros std_msgs std_srvs visualization_msgs rosconsole pedsim message_runtime
   DEPENDS
 )
 

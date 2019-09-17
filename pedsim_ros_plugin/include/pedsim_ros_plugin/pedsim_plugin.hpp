@@ -12,8 +12,10 @@
 
 #include "pedsim/ped_includes.h"
 
+// ROS messages
 #include "pedsim_ros_plugin/PedSimInit.h"
 #include "std_srvs/Empty.h"
+#include "visualization_msgs/Marker.h"
 
 
 namespace gazebo
@@ -48,17 +50,21 @@ private:
 
     void pedsimCleanup();
 
+    visualization_msgs::Marker createAgentMarkerMsg();
+
 private:
     /// Gazebo variables
     physics::WorldPtr world;
     event::ConnectionPtr update_connection;
     std::vector<physics::ModelPtr> agent_model_array;
-    std::vector<physics::ModelPtr> obs_model_array;
+    std::vector<physics::ModelPtr> obstacle_model_array;
 
     /// ROS variables
     std::unique_ptr<ros::NodeHandle> ros_node;
     ros::ServiceServer pedsim_init_service;
     ros::ServiceServer pedsim_reset_service;
+    ros::Publisher pedsim_pos_pub;
+    int pub_rate;
 
     /// PedSim variables
     Ped::Tscene* ped_scene;
