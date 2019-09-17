@@ -31,6 +31,7 @@ namespace gazebo
         );
 
         this->initROSNode();
+        this->waypoints = Waypoints(this->ros_node);
     }
 
     void PedSimPlugin::OnUpdate()
@@ -39,31 +40,31 @@ namespace gazebo
             // Move all agents
             this->ped_scene->moveAgents(0.05);
 
+            // Update the position of the models
             for (int i = 0; i < this->agent_array.size(); i++) {
-                // Update the position of the model
                 if (this->agent_model_array.size() > i && this->agent_model_array[i]) {
                     Ped::Tvector pos = this->agent_array[i]->getPosition();
                     this->agent_model_array[i]->SetWorldPose(ignition::math::Pose3d(pos.x, pos.y, pos.z, 0, 0, 0));
                 }
+            }
 
-                // Publish the position of agents at a given rate
-                if ((this->world->Iterations() % (int) std::round(1.0/this->world->Physics()->GetMaxStepSize()/this->pub_rate)) == 0) {
-                    visualization_msgs::Marker marker_msg = this->createAgentMarkerMsg();
-                    std::vector<geometry_msgs::Point> point_array;
+            // Publish the position of agents at a given rate
+            if ((this->world->Iterations() % (int) std::round(1.0/this->world->Physics()->GetMaxStepSize()/this->pub_rate)) == 0) {
+                visualization_msgs::Marker marker_msg = this->createAgentMarkerMsg();
+                std::vector<geometry_msgs::Point> point_array;
 
-                    for (int i = 0; i < this->agent_array.size(); i++) {
-                        if (this->agent_model_array.size() > i) {
-                            Ped::Tvector pos = this->agent_array[i]->getPosition();
-                            geometry_msgs::Point point_msg;
-                            point_msg.x = pos.x;
-                            point_msg.y = pos.y;
-                            point_msg.z = pos.z;
-                            point_array.push_back(point_msg);
-                        }
+                for (int i = 0; i < this->agent_array.size(); i++) {
+                    if (this->agent_model_array.size() > i) {
+                        Ped::Tvector pos = this->agent_array[i]->getPosition();
+                        geometry_msgs::Point point_msg;
+                        point_msg.x = pos.x;
+                        point_msg.y = pos.y;
+                        point_msg.z = pos.z;
+                        point_array.push_back(point_msg);
                     }
-                    marker_msg.points = point_array;
-                    this->pedsim_pos_pub.publish(marker_msg);
                 }
+                marker_msg.points = point_array;
+                this->pedsim_pos_pub.publish(marker_msg);
             }
 
             if (this->world->Iterations() % 1000 == 0) {
@@ -109,8 +110,8 @@ namespace gazebo
 
         // Create waypoints
         ROS_INFO_STREAM("Create waypoints");
-        Ped::Twaypoint* w1 = new Ped::Twaypoint(-100, 0, 24);
-        Ped::Twaypoint* w2 = new Ped::Twaypoint(+100, 0, 12);
+        this->waypoints.addWaypoint("w1", -100, 0, 24);
+        this->waypoints.addWaypoint("w2", +100, 0, 12);
 
         // Create obstacles
         ROS_INFO_STREAM("Create obstacles");
@@ -129,8 +130,8 @@ namespace gazebo
         for (int i = 0; i < this->agent_number; i++) {
             Ped::Tagent* agent = new Ped::Tagent();
             this->agent_array.push_back(agent);
-            agent->addWaypoint(w1);
-            agent->addWaypoint(w2);
+            agent->addWaypoint(this->waypoints.getWaypoint("w1"));
+            agent->addWaypoint(this->waypoints.getWaypoint("w2"));
             agent->setPosition(-50 + rand()/(RAND_MAX/80)-40, 0 + rand()/(RAND_MAX/20) -10, 0);
             agent->setfactorsocialforce(this->factor_social_force);
             agent->setfactorobstacleforce(this->factor_obstacle_force);

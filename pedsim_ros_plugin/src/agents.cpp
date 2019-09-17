@@ -1,0 +1,1 @@
+#include "pedsim_ros_plugin/agents.hpp"

@@ -17,6 +17,7 @@
 #include "std_srvs/Empty.h"
 #include "visualization_msgs/Marker.h"
 
+#include "pedsim_ros_plugin/waypoints.hpp"
 
 namespace gazebo
 {
@@ -60,7 +61,7 @@ private:
     std::vector<physics::ModelPtr> obstacle_model_array;
 
     /// ROS variables
-    std::unique_ptr<ros::NodeHandle> ros_node;
+    std::shared_ptr<ros::NodeHandle> ros_node;
     ros::ServiceServer pedsim_init_service;
     ros::ServiceServer pedsim_reset_service;
     ros::Publisher pedsim_pos_pub;
@@ -75,6 +76,8 @@ private:
     float factor_desired_force;
     int agent_number;
 
+    Waypoints waypoints;
+
     /// Flags
     bool is_pedsim_init;
     bool reset_pedsim;
@@ -84,7 +87,3 @@ GZ_REGISTER_WORLD_PLUGIN(PedSimPlugin)
 } // namespace gazebo
 
 #endif  // PEDSIM_ROS_PLUGIN_HPP
-
-
-
-
