@@ -24,6 +24,7 @@ namespace gazebo
     }
 
     void Obstacles::clear() {
+        // No need to delete the Tobstacle* as they are being deleted by the Tscene
         this->obstacle_array.clear();
 
         ROS_INFO_STREAM("pedsimCleanup going to delete obstacle models");
@@ -31,10 +32,6 @@ namespace gazebo
             this->world->RemoveModel(this->obstacle_name_array[i]);
         }
         this->obstacle_name_array.clear();
-    }
-
-    std::vector<Ped::Tobstacle*> Obstacles::getObstacleArray() {
-        return this->obstacle_array;
     }
 
     void Obstacles::createObstacleModel(std::string name, double ax, double ay, double bx, double by)

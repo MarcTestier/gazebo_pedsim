@@ -43,11 +43,12 @@ namespace gazebo
             this->ped_scene->moveAgents(0.05);
 
             // Update the position of the models
-            this->agents.updatePos();
+            this->agents.updateModelPos();
 
+            // TODO: add some param to enable/disable this
             // Publish the position of agents at a given rate
             if ((this->world->Iterations() % (int) std::round(1.0/this->world->Physics()->GetMaxStepSize()/this->pub_rate)) == 0) {
-                this->agents.publishPos();
+                this->agents.publishRvizPos();
             }
 
             // Do some cleanup of the pedscene
@@ -64,7 +65,7 @@ namespace gazebo
 
     void PedSimPlugin::initROSNode()
     {
-        // Create ros node and publish stuff there!
+        // Create ros node and services
         this->ros_node.reset(new ros::NodeHandle("pedsim_plugin_ros_node"));
 
         this->pedsim_init_service = this->ros_node->advertiseService(
@@ -119,7 +120,6 @@ namespace gazebo
 
         ROS_INFO_STREAM("PedSim initialized");
     }
-
 
     // TODO: add params to init service to set obstacles (?), waypoints, scene size
     bool PedSimPlugin::pedSimInitServiceCb(
@@ -190,5 +190,4 @@ namespace gazebo
         this->is_pedsim_init = false;
         this->world->SetPaused(false);
     }
-
 } // namespace gazebo

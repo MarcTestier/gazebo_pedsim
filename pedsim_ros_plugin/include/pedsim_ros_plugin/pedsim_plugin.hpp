@@ -25,31 +25,64 @@ namespace gazebo
 class PedSimPlugin : public WorldPlugin
 {
 public:
+    /**
+     * Constructor
+     */
     PedSimPlugin();
+
+    /**
+     * Destructor, delete the ped scene and its pointers on obstacles, waypoints and agents
+     */
     ~PedSimPlugin();
 
+    /**
+     * Called when Gazebo finish initializing
+     * @param _world [description]
+     * @param _sdf   [description]
+     */
     void Load(physics::WorldPtr _world, sdf::ElementPtr _sdf);
 
+    /**
+     * Called on every update step of the physics
+     */
     void OnUpdate();
 
 private:
+    /**
+     * Initialize the ROS node and the ROS services
+     */
     void initROSNode();
 
+    /**
+     * Initialize the pedsim simulator
+     */
     void initPedSim();
 
-    void createAgentModel(int i, Ped::Tvector pos);
-    void createObstacleModel(int i, double ax, double ay, double bx, double by);
-
+    /**
+     * ROS service to initialize the pedsim simulator
+     * @param  req [description]
+     * @param  res [description]
+     * @return     [description]
+     */
     bool pedSimInitServiceCb(
         pedsim_ros_plugin::PedSimInit::Request &req,
         pedsim_ros_plugin::PedSimInit::Response &res
     );
 
+    /**
+     * ROS service to reset the pedsim simulator
+     * @param  req [description]
+     * @param  res [description]
+     * @return     [description]
+     */
     bool pedSimResetServiceCb(
         std_srvs::Empty::Request &req, 
         std_srvs::Empty::Response &res
     );
 
+    /**
+     * Clear the ped scene and its waypoints, agents and obstacles
+     */
     void pedsimCleanup();
 
 private:

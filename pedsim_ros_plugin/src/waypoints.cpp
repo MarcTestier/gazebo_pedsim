@@ -13,10 +13,12 @@ void Waypoints::addWaypoint(std::string name, double x, double y, double radius)
 }
 
 void Waypoints::clear() {
+    // No need to delete the Twaypoint* as they are being deleted by the Tscene
     this->waypoint_map.clear();
 }
 
-// TODO some exception stuff
+// TODO: use null_ptr ??
+// TODO: some exception stuff
 Ped::Twaypoint* Waypoints::getWaypoint(std::string name) { 
     auto search = waypoint_map.find(name);
     if (search != waypoint_map.end()) {
@@ -25,8 +27,4 @@ Ped::Twaypoint* Waypoints::getWaypoint(std::string name) {
         ROS_WARN_STREAM("Waypoint " << name << " not found");
     }
     return NULL;
-}
-
-std::map<std::string, Ped::Twaypoint*> Waypoints::getWaypointMap() {
-    return this->waypoint_map;
 }

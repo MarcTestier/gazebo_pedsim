@@ -57,6 +57,7 @@ namespace gazebo
     }
 
     void Agents::clear() {
+        // No need to delete the Tagent* as they are being deleted by the Tscene
         this->agent_array.clear();
 
         ROS_INFO_STREAM("pedsimCleanup going to delete agent models");
@@ -66,10 +67,6 @@ namespace gazebo
         this->agent_model_array.clear();
 
         this->total_agent_number = 0;
-    }
-
-    std::vector<Ped::Tagent*> Agents::getAgentArray() {
-        return this->agent_array;
     }
 
     /// TODO: Add human model
@@ -107,7 +104,7 @@ namespace gazebo
         this->world->InsertModelSDF(agentSDF);
     }
 
-    void Agents::updatePos() {
+    void Agents::updateModelPos() {
         for (int i = 0; i < this->agent_array.size(); i++) {
             if (this->agent_model_array.size() > i && this->agent_model_array[i]) {
                 Ped::Tvector pos = this->agent_array[i]->getPosition();
@@ -116,7 +113,7 @@ namespace gazebo
         }
     }
 
-    void Agents::publishPos() {
+    void Agents::publishRvizPos() {
         visualization_msgs::Marker marker_msg = this->createAgentMarkerMsg();
         std::vector<geometry_msgs::Point> point_array;
 
