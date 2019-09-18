@@ -12,6 +12,20 @@ namespace gazebo
     ):ros_node(ros_node_), world(world_), total_agent_number(0)
     {
         this->agent_pos_pub = this->ros_node->advertise<visualization_msgs::Marker>("pedsim_agent_pos", 0);
+        
+        if (ros::param::has("/spawn_points")) {
+            XmlRpc::XmlRpcValue spawn_points;
+            nh.getParam("spawn_points", spawn_points);
+            ROS_ASSERT(spawn_points.getType() == XmlRpc::XmlRpcValue::TypeArray);
+
+            for (int32_t i = 0; i < spawn_points.size(); ++i) {
+                ROS_INFO_STREAM("Hoy " << spawn_points[i].getType());
+            }
+
+            ROS_INFO_STREAM("Got " << spawn_points.size() << " spawn points");
+        } else {
+            ROS_INFO_STREAM("Didn't find any spawn points");
+        }
     }
 
     void Agents::addAgents(
@@ -33,7 +47,8 @@ namespace gazebo
             for (int j = 0; j < waypoint_name_array.size(); j++) {
                 agent->addWaypoint(waypoints.getWaypoint(waypoint_name_array[j]));
             }
-            agent->setPosition(-50 + rand()/(RAND_MAX/80)-40, 0 + rand()/(RAND_MAX/20) -10, 0);
+            // agent->setPosition(-50 + rand()/(RAND_MAX/80)-40, 0 + rand()/(RAND_MAX/20) -10, 0);
+            agent->setPosition(-5, 5, 0);
 
             agent->setfactorsocialforce(factor_social_force);
             agent->setfactorobstacleforce(factor_obstacle_force);
@@ -80,7 +95,7 @@ namespace gazebo
                 <static>true</static>\
                 <pose>" + std::to_string(pos.x) + " " + std::to_string(pos.y) + " " + std::to_string(pos.z) + " 0 0 0</pose>\
                 <link name ='link'>\
-                    <pose>0 0 .5 0 0 0</pose>\
+                    <pose>0 0 0 0 0 0</pose>\
                     <collision name ='collision'>\
                         <geometry>\
                             <cylinder>\
