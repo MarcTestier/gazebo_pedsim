@@ -17,6 +17,40 @@ namespace gazebo
         this->obstacle_name_array.push_back(name);
     }
 
+    // TODO: Get list of models name to add instead of just "walls"
+    void Obstacles::addGazeboObstacles() {
+        physics::ModelPtr modelPtr = this->world->ModelByName("walls");
+        if (modelPtr) {
+            ROS_INFO_STREAM("Got walls model");
+            physics::LinkPtr linkPtr = modelPtr->GetLink("walls");
+            if (linkPtr) {
+                ROS_INFO_STREAM("Got link model");
+                int linkChildCount = linkPtr->GetChildCount();
+                ROS_INFO_STREAM("Got " << linkChildCount << " children");
+                for (int i = 0; i < linkChildCount; i++) {
+                    physics::CollisionPtr collisionPtr = linkPtr->GetChildCollision("walls_" + std::to_string(i));
+                    if (collisionPtr) {
+                        ignition::math::Box collisionBox = collisionPtr->CollisionBoundingBox();
+                        ignition::math::Pose3d collisionPose = collisionPtr->WorldPose();
+/*
+                        ROS_INFO_STREAM("Collision " << i << " pose " << collisionPose);
+                        ROS_INFO_STREAM("Collision " << i << "  size (" << collisionBox.XLength() << ", " << collisionBox.YLength() << ", " << collisionBox.ZLength() << ")");
+                        ROS_INFO_STREAM("Collision " << i << "  Min corner " << collisionBox.Min());
+                        ROS_INFO_STREAM("Collision " << i << "  Max corner " << collisionBox.Max());
+*/
+                        
+                        // To display the walls in Gazebo
+                        //this->addObstacle("walls_" + std::to_string(i), collisionBox.Min().X(), collisionBox.Min().Y(), collisionBox.Max().X(), collisionBox.Max().Y());
+
+                        this->obstacle_array.push_back(new Ped::Tobstacle(collisionBox.Min().X(), collisionBox.Min().Y(), collisionBox.Max().X(), collisionBox.Max().Y()));
+                    }
+                }
+            }
+        } else {
+            ROS_INFO_STREAM("No wall found");
+        }
+    }
+
     void Obstacles::finishObstacles(Ped::Tscene* ped_scene) {
         for (int i = 0; i < this->obstacle_array.size(); i++) {
             ped_scene->addObstacle(this->obstacle_array[i]);
@@ -52,13 +86,23 @@ namespace gazebo
                     <pose>0 0 0 0 0 0</pose>\
                     <collision name ='collision'>\
                         <geometry>\
-                            <box><size>" + std::to_string(length) + " 0.1 1</size></box>\
+                            <box>\
+                                <size>" + std::to_string(length) + " 0.1 1</size>\
+                            </box>\
                         </geometry>\
                     </collision>\
                     <visual name='visual'>\
                         <geometry>\
-                            <box><size>" + std::to_string(length) + " 0.1 1</size></box>\
+                            <box>\
+                                <size>" + std::to_string(length) + " 0.1 1</size>\
+                            </box>\
                         </geometry>\
+                        <material>\
+                            <ambient>0.1 0.1 0.1 1</ambient>\
+                            <diffuse>0.1 0.1 0.2 1</diffuse>\
+                            <specular>0 0 0 0</specular>\
+                            <emissive>0 0 0 1</emissive>\
+                        </material>\
                     </visual>\
                 </link>\
             </model>\

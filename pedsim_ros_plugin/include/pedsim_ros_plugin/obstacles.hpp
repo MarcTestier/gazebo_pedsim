@@ -40,6 +40,11 @@ public:
     void addObstacle(std::string name, double ax, double ay, double bx, double by);
 
     /**
+     * Create pedsim obstacles from the Gazebo world
+     */
+    void addGazeboObstacles();
+
+    /**
      * Add all the obstacles to the ped scene, to be used after adding all the obstacles using the function addObstacle
      * @param ped_scene [description]
      */
@@ -59,7 +64,6 @@ public:
      * @param by   [description]
      */
     void createObstacleModel(std::string name, double ax, double ay, double bx, double by);
-
 
 private:
     physics::WorldPtr world;

@@ -90,7 +90,7 @@ private:
     std::vector<physics::ModelPtr> agent_model_array;
     std::shared_ptr<ros::NodeHandle> ros_node;
     int total_agent_number;
-    ros::Publisher pedsim_pos_pub;
+    ros::Publisher agent_pos_pub;
 };
 } // namespace gazebo
 

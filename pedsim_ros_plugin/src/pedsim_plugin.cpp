@@ -55,6 +55,11 @@ namespace gazebo
             if (this->world->Iterations() % 1000 == 0) {
                 this->ped_scene->cleanup();
             }
+
+            // Publish the waypoints position
+            if (this->world->Iterations() % 5000 == 0) {
+                this->waypoints.publishRvizPos();
+            }
         }
 
         // Deleting models in the main world thread to avoid race conflicts leading to double free and corruption errors
@@ -68,12 +73,14 @@ namespace gazebo
         // Create ros node and services
         this->ros_node.reset(new ros::NodeHandle("pedsim_plugin_ros_node"));
 
+        // Create the service to initialize pedsim
         this->pedsim_init_service = this->ros_node->advertiseService(
             this->world->Name() + "/pedSimInitService",
             &PedSimPlugin::pedSimInitServiceCb,
             this
         );
 
+        // Create the service to reset pedsim
         this->pedsim_reset_service = this->ros_node->advertiseService(
             this->world->Name() + "/pedSimResetService",
             &PedSimPlugin::pedSimResetServiceCb,
@@ -98,7 +105,8 @@ namespace gazebo
 
         // Create obstacles
         ROS_INFO_STREAM("Create obstacles");
-        this->obstacles.addObstacle("obstacle0", 0, -5,  0, +5);
+        //this->obstacles.addObstacle("obstacle0", 0, -5,  0, +5);
+        this->obstacles.addGazeboObstacles();
         this->obstacles.finishObstacles(this->ped_scene);
 
         // Create agents

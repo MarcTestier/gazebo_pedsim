@@ -11,7 +11,7 @@ namespace gazebo
         physics::WorldPtr world_
     ):ros_node(ros_node_), world(world_), total_agent_number(0)
     {
-        this->pedsim_pos_pub = this->ros_node->advertise<visualization_msgs::Marker>("pedsim_pos", 0);
+        this->agent_pos_pub = this->ros_node->advertise<visualization_msgs::Marker>("pedsim_agent_pos", 0);
     }
 
     void Agents::addAgents(
@@ -80,7 +80,7 @@ namespace gazebo
                 <static>true</static>\
                 <pose>" + std::to_string(pos.x) + " " + std::to_string(pos.y) + " " + std::to_string(pos.z) + " 0 0 0</pose>\
                 <link name ='link'>\
-                    <pose>0 0 .2 0 0 0</pose>\
+                    <pose>0 0 .5 0 0 0</pose>\
                     <collision name ='collision'>\
                         <geometry>\
                             <cylinder>\
@@ -96,6 +96,12 @@ namespace gazebo
                                 <length>1</length>\
                             </cylinder>\
                         </geometry>\
+                        <material>\
+                            <ambient>0.1 0.1 0.1 1</ambient>\
+                            <diffuse>0.1 0.7 0.1 1</diffuse>\
+                            <specular>0 0 0 0</specular>\
+                            <emissive>0 0 0 1</emissive>\
+                        </material>\
                     </visual>\
                 </link>\
             </model>\
@@ -108,7 +114,7 @@ namespace gazebo
         for (int i = 0; i < this->agent_array.size(); i++) {
             if (this->agent_model_array.size() > i && this->agent_model_array[i]) {
                 Ped::Tvector pos = this->agent_array[i]->getPosition();
-                this->agent_model_array[i]->SetWorldPose(ignition::math::Pose3d(pos.x, pos.y, pos.z, 0, 0, 0));
+                this->agent_model_array[i]->SetWorldPose(ignition::math::Pose3d(pos.x, pos.y, pos.z + 0.5, 0, 0, 0));
             }
         }
     }
@@ -128,7 +134,7 @@ namespace gazebo
             }
         }
         marker_msg.points = point_array;
-        this->pedsim_pos_pub.publish(marker_msg);
+        this->agent_pos_pub.publish(marker_msg);
     }
 
     visualization_msgs::Marker Agents::createAgentMarkerMsg() {
@@ -139,9 +145,9 @@ namespace gazebo
         marker.id = 0;
         marker.type = visualization_msgs::Marker::SPHERE_LIST;
         marker.action = visualization_msgs::Marker::ADD;
-        marker.scale.x = 0.5;
-        marker.scale.y = 0.5;
-        marker.scale.z = 0.5;
+        marker.scale.x = 1.0;
+        marker.scale.y = 1.0;
+        marker.scale.z = 1.0;
         marker.color.a = 1.0;
         marker.color.r = 0.0;
         marker.color.g = 1.0;

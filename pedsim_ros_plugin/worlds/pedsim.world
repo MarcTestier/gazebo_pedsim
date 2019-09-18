@@ -12,7 +12,6 @@
       <uri>model://sun</uri>
     </include>
 
-    <!-- reference to your plugin -->
     <plugin name="pedsim_plugin" filename="libpedsim_ros_plugin.so"/>
   </world>
 </sdf>
