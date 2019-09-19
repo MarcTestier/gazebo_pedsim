@@ -1,2 +1,2 @@
-# gazebo_pedsim_tests
+# gazebo_pedsim_tests (WIP)
 Some test playing with Gazebo and PedSim
