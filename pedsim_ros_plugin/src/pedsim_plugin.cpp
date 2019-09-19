@@ -40,7 +40,7 @@ namespace gazebo
     {
         if (this->is_pedsim_init && !this->reset_pedsim) {
             // Move all agents
-            this->ped_scene->moveAgents(0.05);
+            this->ped_scene->moveAgents(0.025);
 
             // Update the position of the models
             this->agents.updateModelPos();
@@ -119,7 +119,8 @@ namespace gazebo
             this->factor_social_force,
             this->factor_obstacle_force,
             this->factor_lookahead_force,
-            this->factor_desired_force
+            this->factor_desired_force,
+            ""
         );
         this->agents.finishAgents();
 
@@ -171,6 +172,7 @@ namespace gazebo
         if (this->is_pedsim_init) {
             this->is_pedsim_init = false;
             this->reset_pedsim = true;
+            this->world->SetPaused(true);
         } else {
             ROS_INFO_STREAM("Can't reset PedSim as it wasn't initialized");
         }

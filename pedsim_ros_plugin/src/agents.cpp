@@ -15,16 +15,27 @@ namespace gazebo
         
         if (ros::param::has("/spawn_points")) {
             XmlRpc::XmlRpcValue spawn_points;
-            nh.getParam("spawn_points", spawn_points);
+            ros::param::get("/spawn_points", spawn_points);
             ROS_ASSERT(spawn_points.getType() == XmlRpc::XmlRpcValue::TypeArray);
 
             for (int32_t i = 0; i < spawn_points.size(); ++i) {
-                ROS_INFO_STREAM("Hoy " << spawn_points[i].getType());
+                ROS_ASSERT(spawn_points[i].getType() == XmlRpc::XmlRpcValue::TypeArray);
+                ROS_ASSERT(spawn_points[i].size() == 4);
+
+                spawn_point_map.insert({
+                    static_cast<std::string>(spawn_points[i][0]),
+                    ignition::math::Vector3d(
+                        static_cast<double>(spawn_points[i][1]),
+                        static_cast<double>(spawn_points[i][2]),
+                        static_cast<double>(spawn_points[i][3])
+                    )
+                });
+                spawn_point_count_map.insert({static_cast<std::string>(spawn_points[i][0]), 0});
             }
 
-            ROS_INFO_STREAM("Got " << spawn_points.size() << " spawn points");
+            ROS_INFO_STREAM("Got " << spawn_points.size() << " spawn points, will be able to spawn up to " << spawn_points.size()*this->agents_per_sp << " agents");
         } else {
-            ROS_INFO_STREAM("Didn't find any spawn points");
+            ROS_WARN_STREAM("Didn't find any spawn points, agents won't be able to spawn");
         }
     }
 
@@ -36,34 +47,45 @@ namespace gazebo
         float factor_social_force,
         float factor_obstacle_force,
         float factor_lookahead_force,
-        float factor_desired_force
+        float factor_desired_force,
+        std::string spawn_point
     ) {
         ROS_INFO_STREAM("Create agents");
 
         for (int i = this->total_agent_number; i < this->total_agent_number + agent_number; i++) {
-            Ped::Tagent* agent = new Ped::Tagent();
-            this->agent_array.push_back(agent);
 
-            for (int j = 0; j < waypoint_name_array.size(); j++) {
-                agent->addWaypoint(waypoints.getWaypoint(waypoint_name_array[j]));
+            ROS_INFO_STREAM("Creating agent " << i);
+            std::string final_spawn_point = this->checkSpawnPoint(spawn_point);
+
+            if (!final_spawn_point.empty()) {
+                Ped::Tagent* agent = new Ped::Tagent();
+                this->agent_array.push_back(agent);
+
+                for (int j = 0; j < waypoint_name_array.size(); j++) {
+                    agent->addWaypoint(waypoints.getWaypoint(waypoint_name_array[j]));
+                }
+
+                agent->setPosition(this->getSpawnPose(final_spawn_point));
+
+                agent->setfactorsocialforce(factor_social_force);
+                agent->setfactorobstacleforce(factor_obstacle_force);
+                agent->setfactorlookaheadforce(factor_lookahead_force);
+                agent->setfactordesiredforce(factor_desired_force);
+                ROS_INFO_STREAM("Pedsim agent " << i << " pos: (" << agent->getPosition().x << ", " << agent->getPosition().y << ")");
+                this->createAgentModel(i, agent->getPosition());
+                ped_scene->addAgent(agent);
+            } else {
+                ROS_WARN_STREAM("Can't spawn any more agents");
+                return;
             }
-            // agent->setPosition(-50 + rand()/(RAND_MAX/80)-40, 0 + rand()/(RAND_MAX/20) -10, 0);
-            agent->setPosition(-5, 5, 0);
-
-            agent->setfactorsocialforce(factor_social_force);
-            agent->setfactorobstacleforce(factor_obstacle_force);
-            agent->setfactorlookaheadforce(factor_lookahead_force);
-            agent->setfactordesiredforce(factor_desired_force);
-            this->createAgentModel(i, agent->getPosition());
-            ped_scene->addAgent(agent);
         }
 
         this->total_agent_number += agent_number;
     }
 
     void Agents::finishAgents() {
+        // Wait for each entity to spawn to get their modelPtr to update later
         for (int i = 0; i < this->total_agent_number; i++) {
-            // Wait for the entity to spawn
             while (!this->world->ModelByName("agent" + std::to_string(i)))
                 common::Time::MSleep(10);
 
@@ -82,12 +104,17 @@ namespace gazebo
         this->agent_model_array.clear();
 
         this->total_agent_number = 0;
+
+        // Resetting the spawn point count
+        for (auto& spawn_point_count : this->spawn_point_count_map) {
+            spawn_point_count.second = 0;
+        }
     }
 
     /// TODO: Add human model
     void Agents::createAgentModel(int i, Ped::Tvector pos)
     {
-        ROS_INFO_STREAM("Creating model for agent" << i);
+        ROS_INFO_STREAM("Creating model for agent " << i);
         sdf::SDF agentSDF;
         agentSDF.SetFromString(
         "<sdf version ='1.6'>\
@@ -169,5 +196,57 @@ namespace gazebo
         marker.color.b = 0.0;
 
         return marker;
+    }
+
+    Ped::Tvector Agents::getSpawnPose(std::string spawn_point) {
+        auto it1 = this->spawn_point_count_map.find(spawn_point);
+        ROS_ASSERT(it1 != this->spawn_point_count_map.end());
+
+        auto it2 = this->spawn_point_map.find(spawn_point);
+        ROS_ASSERT(it2 != this->spawn_point_map.end());
+
+        double posX = it2->second.X()+(it1->second%3-1);
+        double posY = it2->second.Y()+(it1->second/3-1);
+        double posZ = it2->second.Z();
+
+        ROS_INFO_STREAM("Going to use spawn point " << spawn_point << " which has been used " << it1->second << " times and spawn in ("
+        << it1->second%3-1 << ", "
+        << it1->second/3-1 << ") + ("
+        << it2->second.X() << ", "
+        << it2->second.Y() << ") = ("
+        << posX << ", "
+        << posY << ")"
+        );
+
+        it1->second++;
+
+        return Ped::Tvector(posX, posY, posZ);
+    }
+
+    std::string Agents::checkSpawnPoint(std::string spawn_point){
+        if (spawn_point.empty()) {
+            for (auto const& it : this->spawn_point_count_map) {
+                if (it.second >= agents_per_sp) {
+                    ROS_WARN_STREAM("Spawn point " << it.first << " is full, trying the next one");
+                } else {
+                    ROS_INFO_STREAM("Going to use spawn point " << it.first);
+                    return it.first;
+                }
+            }
+            ROS_WARN_STREAM("All the spawn points are full");
+            spawn_point = "";
+        } else {
+            auto it = this->spawn_point_count_map.find(spawn_point);
+            if (it != this->spawn_point_count_map.end()) {
+                ROS_WARN_STREAM("Spawn point " << spawn_point << " could not be found");
+                spawn_point = "";
+            }
+            if (it->second >= agents_per_sp) {
+                ROS_WARN_STREAM("Spawn point " << spawn_point << " is full");
+                spawn_point = "";
+            }
+        }
+
+        return spawn_point;
     }
 } // namespace gazebo

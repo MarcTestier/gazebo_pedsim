@@ -27,6 +27,7 @@ public:
      * @param world_    [description]
      */
     Agents(std::shared_ptr<ros::NodeHandle> ros_node_, physics::WorldPtr world_);
+
     /**
      * Create *agent_number* agents for the given *ped_scene* and in Gazebo.
      * The agents will follow the waypoints given in *waypoint_name_array* using the forces given in parameters
@@ -38,6 +39,7 @@ public:
      * @param factor_obstacle_force  [description]
      * @param factor_lookahead_force [description]
      * @param factor_desired_force   [description]
+     * @param spawn_point            [description]
      */
     void addAgents(
         int agent_number,
@@ -47,7 +49,8 @@ public:
         float factor_social_force,
         float factor_obstacle_force,
         float factor_lookahead_force,
-        float factor_desired_force);
+        float factor_desired_force,
+        std::string spawn_point);
 
     /**
      * Wait for all the Gazebo models to spawn and put them in a vector to make it easier to update their position later
@@ -71,7 +74,6 @@ public:
 
     /**
      * Create the Gazebo model of the given agent
-     * [createAgentModel description]
      * @param i   [description]
      * @param pos [description]
      */
@@ -84,6 +86,16 @@ private:
      */
     visualization_msgs::Marker createAgentMarkerMsg();
 
+    /**
+     * @brief Get the spawn position for an agent
+     * 
+     * @param spawn_point 
+     * @return Ped::Tvector 
+     */
+    Ped::Tvector getSpawnPose(std::string spawn_point);
+
+    std::string checkSpawnPoint(std::string spawn_point);
+
 private:
     physics::WorldPtr world;
     std::vector<Ped::Tagent*> agent_array;
@@ -91,6 +103,10 @@ private:
     std::shared_ptr<ros::NodeHandle> ros_node;
     int total_agent_number;
     ros::Publisher agent_pos_pub;
+    std::map<std::string, ignition::math::Vector3d> spawn_point_map;
+    std::map<std::string, int> spawn_point_count_map;
+
+    static int const agents_per_sp = 9;
 };
 } // namespace gazebo
 
