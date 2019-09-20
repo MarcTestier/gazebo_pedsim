@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   gazebo_ros 
   pedsim
   message_generation
+  utilities
 )
 
 set_directory_properties(PROPERTIES COMPILE_OPTIONS "-std=c++11")

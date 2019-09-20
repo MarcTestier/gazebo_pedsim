@@ -4,7 +4,7 @@
 // TODO: Comments and auto documentation
 namespace gazebo
 {
-    PedSimPlugin::PedSimPlugin() : WorldPlugin(), is_pedsim_init(false), factor_social_force(2.1), factor_obstacle_force(1.0), factor_lookahead_force(1.0), factor_desired_force(1.0), agent_number(10), reset_pedsim(false), pub_rate(15)
+    PedSimPlugin::PedSimPlugin() : WorldPlugin(), is_pedsim_init(false), factor_social_force(2.1), factor_obstacle_force(1.0), factor_lookahead_force(1.0), factor_desired_force(1.0), agent_number(10), reset_pedsim(false), agent_pos_pub_rate(15), pedsim_update_rate(20)
     {
     }
 
@@ -39,11 +39,8 @@ namespace gazebo
     void PedSimPlugin::OnUpdate()
     {
         if (this->is_pedsim_init && !this->reset_pedsim) {
-            // Move all agents
-
-
-            if (this->world->Iterations() % 50 == 0) {
-                this->ped_scene->moveAgents(0.125);
+            if ((this->world->Iterations() % (int) std::round(1.0/this->world->Physics()->GetMaxStepSize()/this->pedsim_update_rate)) == 0) {
+                this->ped_scene->moveAgents(3.0/this->pedsim_update_rate);
                 // Update the position of the models
                 this->agents.updateModelPos();
 
@@ -55,7 +52,7 @@ namespace gazebo
 
             // TODO: add some param to enable/disable this
             // Publish the position of agents at a given rate
-            if ((this->world->Iterations() % (int) std::round(1.0/this->world->Physics()->GetMaxStepSize()/this->pub_rate)) == 0) {
+            if ((this->world->Iterations() % (int) std::round(1.0/this->world->Physics()->GetMaxStepSize()/this->agent_pos_pub_rate)) == 0) {
                 this->agents.publishRvizPos();
             }
 
@@ -155,8 +152,11 @@ namespace gazebo
             if (req.agent_number > 0)
                 this->agent_number = req.agent_number;
 
-            if (req.pub_rate > 0)
-                this->pub_rate = req.pub_rate;
+            if (req.agent_pos_pub_rate > 0)
+                this->agent_pos_pub_rate = req.agent_pos_pub_rate;
+
+            if (req.pedsim_update_rate > 0)
+                this->pedsim_update_rate = req.pedsim_update_rate;
 
             this->initPedSim();
             this->is_pedsim_init = true;
@@ -175,7 +175,7 @@ namespace gazebo
         if (this->is_pedsim_init) {
             this->is_pedsim_init = false;
             this->reset_pedsim = true;
-            this->world->SetPaused(true);
+            this->world->SetPaused(false);
         } else {
             ROS_INFO_STREAM("Can't reset PedSim as it wasn't initialized");
         }

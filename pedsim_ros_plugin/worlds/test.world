@@ -2,6 +2,7 @@
 <sdf version="1.6">
   <world name="default">
     <plugin name="pedsim_plugin" filename="libpedsim_ros_plugin.so"/>
+    <plugin name="pos_plugin" filename="libpos_plugin.so"/>
     <gui>
       <camera name="user_camera">
         <pose>27.6458 -10.1832 56.2669 6.7e-05 1.5698 -1.57194</pose>

@@ -3,6 +3,7 @@ float32 factor_obstacle_force
 float32 factor_lookahead_force
 float32 factor_desired_force
 int32 agent_number
-int32 pub_rate
+int32 agent_pos_pub_rate
+int32 pedsim_update_rate
 ---
 std_msgs/String msg

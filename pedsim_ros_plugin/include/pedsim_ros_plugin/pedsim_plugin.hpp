@@ -94,7 +94,7 @@ private:
     std::shared_ptr<ros::NodeHandle> ros_node;
     ros::ServiceServer pedsim_init_service;
     ros::ServiceServer pedsim_reset_service;
-    int pub_rate;
+    int agent_pos_pub_rate;
 
     /// PedSim variables
     Ped::Tscene* ped_scene;
@@ -103,6 +103,7 @@ private:
     float factor_lookahead_force;
     float factor_desired_force;
     int agent_number;
+    int pedsim_update_rate;
 
     Agents agents;
     Waypoints waypoints;

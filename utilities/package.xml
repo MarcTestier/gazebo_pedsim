@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package format="2">
-    <name>pedsim_ros_plugin</name>
+    <name>utilities</name>
     <version>0.1.11</version>
     <description>PedSim ROS plugin for Gazebo 9</description>
 
@@ -17,11 +17,8 @@
     <depend>roscpp</depend>
     <depend>std_msgs</depend>
     <depend>std_srvs</depend>
-    <depend>visualization_msgs</depend>
     <depend>rosconsole</depend>
     <depend>gazebo_ros</depend>
-    <depend>pedsim</depend>
-    <depend>utilities</depend>
     
     <exec_depend>message_runtime</exec_depend>
 
