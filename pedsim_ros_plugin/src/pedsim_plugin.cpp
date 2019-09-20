@@ -40,20 +40,23 @@ namespace gazebo
     {
         if (this->is_pedsim_init && !this->reset_pedsim) {
             // Move all agents
-            this->ped_scene->moveAgents(0.025);
 
-            // Update the position of the models
-            this->agents.updateModelPos();
+
+            if (this->world->Iterations() % 50 == 0) {
+                this->ped_scene->moveAgents(0.125);
+                // Update the position of the models
+                this->agents.updateModelPos();
+
+                // Do some cleanup of the pedscene
+                if (this->world->Iterations() % 1000 == 0) {
+                    this->ped_scene->cleanup();
+                }
+            }
 
             // TODO: add some param to enable/disable this
             // Publish the position of agents at a given rate
             if ((this->world->Iterations() % (int) std::round(1.0/this->world->Physics()->GetMaxStepSize()/this->pub_rate)) == 0) {
                 this->agents.publishRvizPos();
-            }
-
-            // Do some cleanup of the pedscene
-            if (this->world->Iterations() % 1000 == 0) {
-                this->ped_scene->cleanup();
             }
 
             // Publish the waypoints position

@@ -51,7 +51,7 @@ namespace gazebo
         std::string spawn_point
     ) {
         ROS_INFO_STREAM("Create agents");
-
+        int count = 0;
         for (int i = this->total_agent_number; i < this->total_agent_number + agent_number; i++) {
 
             ROS_INFO_STREAM("Creating agent " << i);
@@ -74,13 +74,14 @@ namespace gazebo
                 ROS_INFO_STREAM("Pedsim agent " << i << " pos: (" << agent->getPosition().x << ", " << agent->getPosition().y << ")");
                 this->createAgentModel(i, agent->getPosition());
                 ped_scene->addAgent(agent);
+                count++;
             } else {
                 ROS_WARN_STREAM("Can't spawn any more agents");
-                return;
+                break;
             }
         }
 
-        this->total_agent_number += agent_number;
+        this->total_agent_number += count;
     }
 
     void Agents::finishAgents() {
