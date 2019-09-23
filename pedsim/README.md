@@ -16,6 +16,3 @@ You can check the [CMakeLists.txt](https://github.com/MarcTestier/gazebo_pedsim/
 
 ## Limitations
 To check.
-
-## TODO
-- Eventually move `pointers*` to `shared_ptr`.

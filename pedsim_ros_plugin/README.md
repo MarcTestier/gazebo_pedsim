@@ -54,4 +54,4 @@ Soon
 
 ## TODO
 - More parameters
-- Check licensing obligations and which license to use
+- Check licensing obligations and which license to use (Have to link dynalically against libpedsim.so and should remove the source from this folder)
