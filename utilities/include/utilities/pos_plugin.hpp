@@ -51,6 +51,8 @@ public:
         std_srvs::SetBool::Response &res
     );
 
+    void spawnModels(std::string param_name, float col_r, float col_g, float col_b);
+
     void createPointModel(std::string name, double pos_x, double pos_y, double pos_z, double col_r, double col_g, double col_b);
 
     void deleteModels();

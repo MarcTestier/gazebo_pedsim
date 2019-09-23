@@ -30,7 +30,7 @@ namespace gazebo
         // Create the service to initialize pedsim
         this->display_points_models_service = this->ros_node->advertiseService(
             this->world->Name() + "/displayPointsModels",
-            &PedSimPlugin::displayPointsModelsServiceCb,
+            &PosPlugin::displayPointsModelsServiceCb,
             this
         );
     }
@@ -96,7 +96,8 @@ namespace gazebo
 
     void PosPlugin::createPointModel(std::string name, double pos_x, double pos_y, double pos_z, double col_r, double col_g, double col_b)
     {
-        ROS_INFO_STREAM("Creating model for points " << i);
+        ROS_INFO_STREAM("Creating model for point " << name);
+        
         sdf::SDF agentSDF;
         agentSDF.SetFromString(
         "<sdf version ='1.6'>\
