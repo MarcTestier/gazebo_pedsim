@@ -51,6 +51,11 @@ public:
         std_srvs::SetBool::Response &res
     );
 
+    bool createRoutesServiceCb(
+        std_srvs::SetBool::Request &req, 
+        std_srvs::SetBool::Response &res
+    );
+
     void spawnModels(std::string param_name, float col_r, float col_g, float col_b);
 
     void createPointModel(std::string name, double pos_x, double pos_y, double pos_z, double col_r, double col_g, double col_b);
@@ -62,14 +67,18 @@ private:
     physics::WorldPtr world;
     event::ConnectionPtr update_connection;
     std::vector<std::string> point_name_array;
+    std::vector<ignition::math::Pose3d> model_pos_array;
     
     /// ROS variables
     std::shared_ptr<ros::NodeHandle> ros_node;
     ros::ServiceServer display_points_models_service;
+    ros::ServiceServer create_routes_service;
 
     // Flags
     bool spawn_models;
     bool delete_models;
+    bool create_routes;
+    bool init_model_array;
 };
 
 GZ_REGISTER_WORLD_PLUGIN(PosPlugin)

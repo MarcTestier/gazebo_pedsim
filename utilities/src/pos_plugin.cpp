@@ -27,10 +27,17 @@ namespace gazebo
         // Create ros node and services
         this->ros_node.reset(new ros::NodeHandle("pos_plugin_ros_node"));
 
-        // Create the service to initialize pedsim
+        // Create the service to display waypoints
         this->display_points_models_service = this->ros_node->advertiseService(
             this->world->Name() + "/displayPointsModels",
             &PosPlugin::displayPointsModelsServiceCb,
+            this
+        );
+
+        // Create the service to create routes
+        this->create_routes_service = this->ros_node->advertiseService(
+            this->world->Name() + "/createRoutes",
+            &PosPlugin::createRoutesServiceCb,
             this
         );
     }
@@ -40,14 +47,17 @@ namespace gazebo
         // Display the position of default models every 1 sec
         if (this->world->Iterations() % 1000 == 0) {
             physics::Model_V model_vector = this->world->Models();
+            bool found = false;
             for (int i = 0; i < model_vector.size(); i++) {
                 std::string name = model_vector[i]->GetName();
                 ignition::math::Pose3d pose = model_vector[i]->WorldPose();
                 if (name.find("unit") != std::string::npos) {
                     std::cout << "Position of " << name << " (" << pose.Pos().X() << ", "  << pose.Pos().Y() << ", " << pose.Pos().Z() << ")" << std::endl;
+                    found = true;
                 }
             }
-            std::cout << std::endl;
+            if (found)
+                std::cout << std::endl;
         }
 
         if (this->spawn_models) {
@@ -60,6 +70,15 @@ namespace gazebo
             this->deleteModels();
             this->delete_models = false;
         }
+
+        /*if (this->world->Iterations() % 1000 == 0 && this->create_routes) {
+            for (int i = 0; i < point_name_array.size(); i++) {
+                physics::ModelPtr model = this->world->ModelByName(point_name_array[i]);
+                if (model->IsSelected()) {
+                    ROS_INFO_STREAM("Point " << model->GetName() << " is selected");
+                }
+            }
+        }*/
     }
 
     bool PosPlugin::displayPointsModelsServiceCb(
@@ -68,6 +87,15 @@ namespace gazebo
     {
         this->spawn_models = req.data;
         this->delete_models = !req.data;
+        res.success = true;
+        return true;
+    }
+
+    bool PosPlugin::createRoutesServiceCb(
+        std_srvs::SetBool::Request &req,
+        std_srvs::SetBool::Response &res)
+    {
+        this->create_routes = req.data;
         res.success = true;
         return true;
     }
@@ -102,7 +130,7 @@ namespace gazebo
         sdf::SDF agentSDF;
         agentSDF.SetFromString(
         "<sdf version ='1.6'>\
-            <model name ='agent" + name + "'>\
+            <model name ='" + name + "'>\
                 <static>true</static>\
                 <pose>" + std::to_string(pos_x) + " " + std::to_string(pos_y) + " " + std::to_string(pos_z) + " 0 0 0</pose>\
                 <link name ='link'>\
