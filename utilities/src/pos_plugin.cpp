@@ -53,12 +53,13 @@ namespace gazebo
         if (this->spawn_models) {
             this->spawnModels("pedsim_spawn_points", 1.0, 0.0, 0.0);
             this->spawnModels("pedsim_waypoints", 0.0, 0.0, 1.0);
+            this->spawn_models = false;
         }
 
         if (this->delete_models) {
             this->deleteModels();
+            this->delete_models = false;
         }
-
     }
 
     bool PosPlugin::displayPointsModelsServiceCb(
@@ -97,7 +98,7 @@ namespace gazebo
     void PosPlugin::createPointModel(std::string name, double pos_x, double pos_y, double pos_z, double col_r, double col_g, double col_b)
     {
         ROS_INFO_STREAM("Creating model for point " << name);
-        
+
         sdf::SDF agentSDF;
         agentSDF.SetFromString(
         "<sdf version ='1.6'>\

@@ -1,47 +1,30 @@
-# PedSim Gazebo plugin
-Soon
+# Utilities
+A set of tools I use to help using the PedSim ROS Gazebo plugin.
+Right now, only contains 1 Gazebo world plugin to help getting the position of default models in Gazebo.
 
 ## Installing
-Soon
-
-## Parameters
-Soon
+Install [ROS melodic](http://wiki.ros.org/melodic) and like any other ROS package, compile this package:
+```
+cd <path_to_ros_ws>
+source /opt/ros/melodic/setup.bash
+catkin_make
+````
 
 ## How to use
-### To launch the Gazebo simulation
-With the Gazebo client:
+To use this package, add it as a dependency in your `package.xml` and `CMakeLists.txt`. Then include the plugin into your world:
 ```
-roslaunch pedsim_ros_plugin gui.launch
-```
-Without the Gazebo client (server only + rviz):
-```
-roslaunch pedsim_ros_plugin no_gui.launch
+<plugin name="pos_plugin" filename="libpos_plugin.so"/>
 ```
 
-### Start PedSim
-2 services are available to start the PedSim simulator:
-```
-rosservice call /pedsim_plugin_ros_node/default/pedSimInitService "{
-    factor_social_force: 2.1,
-    factor_obstacle_force: 3.0,
-    factor_lookahead_force: 1.0,
-    factor_desired_force: 1.0,
-    agent_number: 200,
-    agent_pos_pub_rate: 15,
-    pedsim_update_rate: 20
-}"
-```
-Or to remove it:
-```
-rosservice call /pedsim_plugin_ros_node/default/pedSimResetService "{}"
-```
+You can check the [CMakeLists.txt](https://github.com/MarcTestier/gazebo_pedsim/blob/master/pedsim_ros_plugin/CMakeLists.txt) and [package.xml](https://github.com/MarcTestier/gazebo_pedsim/blob/master/pedsim_ros_plugin/package.xml) from the `pedsim_ros_plugin` folder as example.
 
-## Limitations
-Soon
+
+This package contains 2 functions, the first one is triggered as soon as you include the plugin into your world and will simply output in your terminal the position of all the default unit objects in Gazebo.
+
+The second one is a service to display points models in Gazebo of spawn points and waypoints taken from ROS parameters:
+```
+rosservice call /pos_plugin_ros_node/default/displayPointsModels "true"
+```
 
 ## TODO
-Soon
-
-
-
-
+More utilities coming soon.

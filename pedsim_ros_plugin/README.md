@@ -1,19 +1,32 @@
+# WORK IN PROGRESS
 # PedSim Gazebo plugin
-Soon
+A Gazebo world plugin integrating PedSim into Gazebo 9.
 
 ## Installing
-Soon
+Install [ROS melodic](http://wiki.ros.org/melodic) and Gazebo 9 and compile this package:
+```
+cd <path_to_ros_ws>
+source /opt/ros/melodic/setup.bash
+catkin_make
+````
 
 ## Parameters
-Soon
+This package uses parameters as defined in the `config/points.yaml` file.
+This file is used to generate spawn points and waypoints for PedSim.
+Each point is described as follow:
+```
+[string name, double pos_x, double pos_y, double pos_z ]
+```
 
 ## How to use
-### To launch the Gazebo simulation
-With the Gazebo client:
+### Launch the Gazebo simulation
+2 launch files are provided as examples in this package, one to launch Gazebo with its client and one without the client.
+
+Launch with the Gazebo client:
 ```
 roslaunch pedsim_ros_plugin gui.launch
 ```
-Without the Gazebo client (server only + rviz):
+Launch without the Gazebo client (server only + rviz):
 ```
 roslaunch pedsim_ros_plugin no_gui.launch
 ```
@@ -40,8 +53,5 @@ rosservice call /pedsim_plugin_ros_node/default/pedSimResetService "{}"
 Soon
 
 ## TODO
-Soon
-
-
-
-
+- More parameters
+- Check licensing obligations and which license to use
