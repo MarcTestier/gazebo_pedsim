@@ -13,9 +13,9 @@ namespace gazebo
     {
         this->agent_pos_pub = this->ros_node->advertise<visualization_msgs::Marker>("pedsim_agent_pos", 0);
         
-        if (ros::param::has("/spawn_points")) {
+        if (ros::param::has("/pedsim_spawn_points")) {
             XmlRpc::XmlRpcValue spawn_points;
-            ros::param::get("/spawn_points", spawn_points);
+            ros::param::get("/pedsim_spawn_points", spawn_points);
             ROS_ASSERT(spawn_points.getType() == XmlRpc::XmlRpcValue::TypeArray);
 
             for (int32_t i = 0; i < spawn_points.size(); ++i) {

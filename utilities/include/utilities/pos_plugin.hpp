@@ -9,6 +9,7 @@
 #include <gazebo/transport/Node.hh>
 #include <ros/ros.h>
 #include <ignition/math/Pose3.hh>
+#include "std_srvs/SetBool.h"
 
 namespace gazebo
 {
@@ -37,10 +38,36 @@ public:
      */
     void OnUpdate();
 
+    /**
+     * @brief Display the points from the yaml files
+     * 
+     * @param req 
+     * @param res 
+     * @return true 
+     * @return false 
+     */
+    bool displayPointsModelsServiceCb(
+        std_srvs::SetBool::Request &req, 
+        std_srvs::SetBool::Response &res
+    );
+
+    void createPointModel(std::string name, double pos_x, double pos_y, double pos_z, double col_r, double col_g, double col_b);
+
+    void deleteModels();
+
 private:
     /// Gazebo variables
     physics::WorldPtr world;
     event::ConnectionPtr update_connection;
+    std::vector<std::string> point_name_array;
+    
+    /// ROS variables
+    std::shared_ptr<ros::NodeHandle> ros_node;
+    ros::ServiceServer display_points_models_service;
+
+    // Flags
+    bool spawn_models;
+    bool delete_models;
 };
 
 GZ_REGISTER_WORLD_PLUGIN(PosPlugin)
