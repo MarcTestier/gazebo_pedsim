@@ -71,6 +71,7 @@ namespace gazebo
             this->delete_models = false;
         }
 
+        // TODO: try model->OnPoseChange()
         /*if (this->world->Iterations() % 1000 == 0 && this->create_routes) {
             for (int i = 0; i < point_name_array.size(); i++) {
                 physics::ModelPtr model = this->world->ModelByName(point_name_array[i]);
